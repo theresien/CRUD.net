@@ -1,6 +1,6 @@
 using System.Windows;
 
-namespace TelephoneCRUD
+namespace UserCRUD
 {
     public partial class App : Application
     {

@@ -1,43 +1,43 @@
-# 📱 Projet CRUD Téléphones - C# WPF
+# 👥 Projet CRUD Utilisateurs - C# WPF
 
 ## Description
-Application de gestion des téléphones développée en C# avec WPF et Entity Framework. Cette application permet d'effectuer toutes les opérations CRUD (Create, Read, Update, Delete) sur une base de données de téléphones.
+Application de gestion des utilisateurs développée en C# avec WPF et Entity Framework. Cette application permet d'effectuer toutes les opérations CRUD (Create, Read, Update, Delete) sur une base de données d'utilisateurs.
 
 ## Fonctionnalités
 
 ### ✨ Fonctionnalités principales
-- **Ajouter** un nouveau téléphone avec validation des données
-- **Modifier** les informations d'un téléphone existant
-- **Supprimer** un téléphone avec confirmation
-- **Consulter** la liste complète des téléphones
-- **Rechercher** des téléphones par marque, modèle ou IMEI
+- **Ajouter** un nouvel utilisateur avec validation des données
+- **Modifier** les informations d'un utilisateur existant
+- **Supprimer** un utilisateur avec confirmation
+- **Consulter** la liste complète des utilisateurs
+- **Rechercher** des utilisateurs par matricule, nom, prénom ou email
 - **Exporter** la liste vers un fichier CSV/TXT
 
 ### 📊 Modèle de données
-- **IMEI** : Clé primaire (15 caractères max)
-- **Marque** : Marque du téléphone (50 caractères max)
-- **Modèle** : Modèle du téléphone (50 caractères max)
-- **Prix** : Prix en euros (décimal avec 2 décimales)
-- **Date d'ajout** : Date et heure d'ajout automatique
+- **Matricule** : Clé primaire (20 caractères max)
+- **Nom** : Nom de famille (50 caractères max)
+- **Prénom** : Prénom (50 caractères max)
+- **Email** : Adresse email unique (100 caractères max)
+- **Date de création** : Date et heure d'ajout automatique
 
 ## 🏗️ Architecture
 
 ### Structure du projet
 ```
-TelephoneCRUD/
+UserCRUD/
 ├── Models/
-│   └── Telephone.cs          # Modèle de données
+│   └── User.cs                # Modèle de données
 ├── Data/
-│   └── TelephoneContext.cs   # Contexte Entity Framework
+│   └── UserContext.cs         # Contexte Entity Framework
 ├── Services/
-│   └── TelephoneService.cs   # Logique métier et accès aux données
-├── MainWindow.xaml           # Interface principale
-├── MainWindow.xaml.cs        # Code-behind principal
-├── ListeTelephoneWindow.xaml # Interface de liste détaillée
-├── ListeTelephoneWindow.xaml.cs
-├── App.xaml                  # Configuration application
+│   └── UserService.cs         # Logique métier et accès aux données
+├── MainWindow.xaml            # Interface principale
+├── MainWindow.xaml.cs         # Code-behind principal
+├── ListeUserWindow.xaml       # Interface de liste détaillée
+├── ListeUserWindow.xaml.cs
+├── App.xaml                   # Configuration application
 ├── App.xaml.cs
-└── TelephoneCRUD.csproj     # Configuration projet
+└── UserCRUD.csproj           # Configuration projet
 ```
 
 ### Technologies utilisées
@@ -58,8 +58,8 @@ TelephoneCRUD/
 1. **Créer le projet**
    ```bash
    # Créer un nouveau dossier pour le projet
-   mkdir TelephoneCRUD
-   cd TelephoneCRUD
+   mkdir UserCRUD
+   cd UserCRUD
    
    # Copier tous les fichiers fournis dans ce dossier
    ```
@@ -72,7 +72,7 @@ TelephoneCRUD/
 3. **Créer la base de données**
    ```bash
    # La base de données sera créée automatiquement au premier lancement
-   # grâce à EnsureCreated() dans TelephoneService
+   # grâce à EnsureCreated() dans UserService
    ```
 
 4. **Compiler et exécuter**
@@ -85,39 +85,39 @@ TelephoneCRUD/
 
 La chaîne de connexion par défaut utilise LocalDB :
 ```csharp
-Server=(localdb)\mssqllocaldb;Database=TelephoneDB;Trusted_Connection=true;
+Server=(localdb)\mssqllocaldb;Database=UserDB;Trusted_Connection=true;
 ```
 
-Pour modifier la base de données, éditez le fichier `Data/TelephoneContext.cs`.
+Pour modifier la base de données, éditez le fichier `Data/UserContext.cs`.
 
 ## 📖 Guide d'utilisation
 
 ### Interface principale (MainWindow)
-1. **Ajouter un téléphone** :
+1. **Ajouter un utilisateur** :
    - Remplir tous les champs obligatoires
    - Cliquer sur "➕ Ajouter"
 
-2. **Modifier un téléphone** :
-   - Sélectionner un téléphone dans la liste
+2. **Modifier un utilisateur** :
+   - Sélectionner un utilisateur dans la liste
    - Modifier les champs souhaités
    - Cliquer sur "✏️ Modifier"
 
-3. **Supprimer un téléphone** :
-   - Sélectionner un téléphone ou saisir l'IMEI
+3. **Supprimer un utilisateur** :
+   - Sélectionner un utilisateur ou saisir le matricule
    - Cliquer sur "🗑️ Supprimer"
    - Confirmer la suppression
 
-### Interface de liste détaillée (ListeTelephoneWindow)
+### Interface de liste détaillée (ListeUserWindow)
 - **Recherche** : Utiliser la barre de recherche pour filtrer
 - **Export** : Exporter la liste vers CSV/TXT
-- **Statistiques** : Voir le nombre total, prix moyen et valeur totale
+- **Statistiques** : Voir le nombre total, domaines email et dernier ajout
 
 ## 🔧 Fonctionnalités techniques
 
 ### Validation des données
 - Tous les champs sont obligatoires
-- L'IMEI doit être unique
-- Le prix doit être un nombre positif
+- Le matricule doit être unique
+- L'email doit être unique et avoir un format valide
 - Longueurs maximales respectées
 
 ### Gestion des erreurs
@@ -169,8 +169,8 @@ Les styles sont définis dans `App.xaml` et peuvent être personnalisés selon v
 - **Interface utilisateur intuitive** et accessible
 
 ### Extensions possibles
-- Ajout de photos pour les téléphones
-- Système de catégories
+- Ajout de photos de profil
+- Système de rôles et permissions
 - Historique des modifications
 - Sauvegarde/restauration
 - Interface multi-langues

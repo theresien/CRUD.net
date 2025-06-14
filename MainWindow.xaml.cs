@@ -1,31 +1,32 @@
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
-using TelephoneCRUD.Models;
-using TelephoneCRUD.Services;
+using UserCRUD.Models;
+using UserCRUD.Services;
 
-namespace TelephoneCRUD
+namespace UserCRUD
 {
     public partial class MainWindow : Window
     {
-        private readonly TelephoneService _telephoneService;
+        private readonly UserService _userService;
         private bool _modeModification = false;
-        private string _imeiOriginal = string.Empty;
+        private string _matriculeOriginal = string.Empty;
 
         public MainWindow()
         {
             InitializeComponent();
-            _telephoneService = new TelephoneService();
-            ChargerTelephones();
+            _userService = new UserService();
+            ChargerUsers();
         }
 
-        private async void ChargerTelephones()
+        private async void ChargerUsers()
         {
             try
             {
-                txtStatus.Text = "Chargement des téléphones...";
-                var telephones = await _telephoneService.ObtenirTousLesTelephoneAsync();
-                dgTelephones.ItemsSource = telephones;
-                txtStatus.Text = $"Nombre de téléphones: {telephones.Count}";
+                txtStatus.Text = "Chargement des utilisateurs...";
+                var users = await _userService.ObtenirTousLesUsersAsync();
+                dgUsers.ItemsSource = users;
+                txtStatus.Text = $"Nombre d'utilisateurs: {users.Count}";
             }
             catch (Exception ex)
             {
@@ -41,26 +42,34 @@ namespace TelephoneCRUD
 
             try
             {
-                var telephone = new Telephone
+                // Vérifier si l'email existe déjà
+                if (await _userService.EmailExisteAsync(txtEmail.Text.Trim()))
                 {
-                    Imei = txtImei.Text.Trim(),
-                    Marque = txtMarque.Text.Trim(),
-                    Modele = txtModele.Text.Trim(),
-                    Prix = decimal.Parse(txtPrix.Text.Trim())
+                    MessageBox.Show("Cet email est déjà utilisé par un autre utilisateur.", "Email existant", 
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var user = new User
+                {
+                    Matricule = txtMatricule.Text.Trim(),
+                    Nom = txtNom.Text.Trim(),
+                    Prenom = txtPrenom.Text.Trim(),
+                    Email = txtEmail.Text.Trim()
                 };
 
-                bool succes = await _telephoneService.AjouterTelephoneAsync(telephone);
+                bool succes = await _userService.AjouterUserAsync(user);
                 
                 if (succes)
                 {
-                    MessageBox.Show("Téléphone ajouté avec succès!", "Succès", 
+                    MessageBox.Show("Utilisateur ajouté avec succès!", "Succès", 
                         MessageBoxButton.OK, MessageBoxImage.Information);
                     ViderChamps();
-                    ChargerTelephones();
+                    ChargerUsers();
                 }
                 else
                 {
-                    MessageBox.Show("Erreur lors de l'ajout. L'IMEI existe peut-être déjà.", "Erreur", 
+                    MessageBox.Show("Erreur lors de l'ajout. Le matricule existe peut-être déjà.", "Erreur", 
                         MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
@@ -75,7 +84,7 @@ namespace TelephoneCRUD
         {
             if (!_modeModification)
             {
-                MessageBox.Show("Veuillez sélectionner un téléphone dans la liste pour le modifier.", "Information", 
+                MessageBox.Show("Veuillez sélectionner un utilisateur dans la liste pour le modifier.", "Information", 
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
@@ -84,24 +93,32 @@ namespace TelephoneCRUD
 
             try
             {
-                var telephone = new Telephone
+                // Vérifier si l'email existe déjà (sauf pour l'utilisateur actuel)
+                if (await _userService.EmailExisteAsync(txtEmail.Text.Trim(), _matriculeOriginal))
                 {
-                    Imei = _imeiOriginal, // Utilise l'IMEI original
-                    Marque = txtMarque.Text.Trim(),
-                    Modele = txtModele.Text.Trim(),
-                    Prix = decimal.Parse(txtPrix.Text.Trim())
+                    MessageBox.Show("Cet email est déjà utilisé par un autre utilisateur.", "Email existant", 
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var user = new User
+                {
+                    Matricule = _matriculeOriginal, // Utilise le matricule original
+                    Nom = txtNom.Text.Trim(),
+                    Prenom = txtPrenom.Text.Trim(),
+                    Email = txtEmail.Text.Trim()
                 };
 
-                bool succes = await _telephoneService.ModifierTelephoneAsync(telephone);
+                bool succes = await _userService.ModifierUserAsync(user);
                 
                 if (succes)
                 {
-                    MessageBox.Show("Téléphone modifié avec succès!", "Succès", 
+                    MessageBox.Show("Utilisateur modifié avec succès!", "Succès", 
                         MessageBoxButton.OK, MessageBoxImage.Information);
                     ViderChamps();
-                    ChargerTelephones();
+                    ChargerUsers();
                     _modeModification = false;
-                    txtImei.IsReadOnly = false;
+                    txtMatricule.IsReadOnly = false;
                 }
                 else
                 {
@@ -118,34 +135,34 @@ namespace TelephoneCRUD
 
         private async void BtnSupprimer_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtImei.Text))
+            if (string.IsNullOrWhiteSpace(txtMatricule.Text))
             {
-                MessageBox.Show("Veuillez saisir ou sélectionner un IMEI.", "Information", 
+                MessageBox.Show("Veuillez saisir ou sélectionner un matricule.", "Information", 
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            var result = MessageBox.Show($"Êtes-vous sûr de vouloir supprimer le téléphone avec l'IMEI: {txtImei.Text}?", 
+            var result = MessageBox.Show($"Êtes-vous sûr de vouloir supprimer l'utilisateur avec le matricule: {txtMatricule.Text}?", 
                 "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Yes)
             {
                 try
                 {
-                    bool succes = await _telephoneService.SupprimerTelephoneAsync(txtImei.Text.Trim());
+                    bool succes = await _userService.SupprimerUserAsync(txtMatricule.Text.Trim());
                     
                     if (succes)
                     {
-                        MessageBox.Show("Téléphone supprimé avec succès!", "Succès", 
+                        MessageBox.Show("Utilisateur supprimé avec succès!", "Succès", 
                             MessageBoxButton.OK, MessageBoxImage.Information);
                         ViderChamps();
-                        ChargerTelephones();
+                        ChargerUsers();
                         _modeModification = false;
-                        txtImei.IsReadOnly = false;
+                        txtMatricule.IsReadOnly = false;
                     }
                     else
                     {
-                        MessageBox.Show("Téléphone non trouvé ou erreur lors de la suppression.", "Erreur", 
+                        MessageBox.Show("Utilisateur non trouvé ou erreur lors de la suppression.", "Erreur", 
                             MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
@@ -161,78 +178,106 @@ namespace TelephoneCRUD
         {
             ViderChamps();
             _modeModification = false;
-            txtImei.IsReadOnly = false;
+            txtMatricule.IsReadOnly = false;
         }
 
         private void BtnActualiser_Click(object sender, RoutedEventArgs e)
         {
-            ChargerTelephones();
+            ChargerUsers();
         }
 
-        private void DgTelephones_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void BtnVoirListe_Click(object sender, RoutedEventArgs e)
         {
-            if (dgTelephones.SelectedItem is Telephone telephone)
+            var listeWindow = new ListeUserWindow();
+            listeWindow.Show();
+        }
+
+        private void DgUsers_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (dgUsers.SelectedItem is User user)
             {
-                txtImei.Text = telephone.Imei;
-                txtMarque.Text = telephone.Marque;
-                txtModele.Text = telephone.Modele;
-                txtPrix.Text = telephone.Prix.ToString("F2");
+                txtMatricule.Text = user.Matricule;
+                txtNom.Text = user.Nom;
+                txtPrenom.Text = user.Prenom;
+                txtEmail.Text = user.Email;
                 
                 _modeModification = true;
-                _imeiOriginal = telephone.Imei;
-                txtImei.IsReadOnly = true; // Empêche la modification de l'IMEI
+                _matriculeOriginal = user.Matricule;
+                txtMatricule.IsReadOnly = true; // Empêche la modification du matricule
             }
         }
 
         private bool ValiderChamps()
         {
-            if (string.IsNullOrWhiteSpace(txtImei.Text))
+            if (string.IsNullOrWhiteSpace(txtMatricule.Text))
             {
-                MessageBox.Show("L'IMEI est obligatoire.", "Validation", 
+                MessageBox.Show("Le matricule est obligatoire.", "Validation", 
                     MessageBoxButton.OK, MessageBoxImage.Warning);
-                txtImei.Focus();
+                txtMatricule.Focus();
                 return false;
             }
 
-            if (string.IsNullOrWhiteSpace(txtMarque.Text))
+            if (string.IsNullOrWhiteSpace(txtNom.Text))
             {
-                MessageBox.Show("La marque est obligatoire.", "Validation", 
+                MessageBox.Show("Le nom est obligatoire.", "Validation", 
                     MessageBoxButton.OK, MessageBoxImage.Warning);
-                txtMarque.Focus();
+                txtNom.Focus();
                 return false;
             }
 
-            if (string.IsNullOrWhiteSpace(txtModele.Text))
+            if (string.IsNullOrWhiteSpace(txtPrenom.Text))
             {
-                MessageBox.Show("Le modèle est obligatoire.", "Validation", 
+                MessageBox.Show("Le prénom est obligatoire.", "Validation", 
                     MessageBoxButton.OK, MessageBoxImage.Warning);
-                txtModele.Focus();
+                txtPrenom.Focus();
                 return false;
             }
 
-            if (!decimal.TryParse(txtPrix.Text, out decimal prix) || prix <= 0)
+            if (string.IsNullOrWhiteSpace(txtEmail.Text))
             {
-                MessageBox.Show("Le prix doit être un nombre positif.", "Validation", 
+                MessageBox.Show("L'email est obligatoire.", "Validation", 
                     MessageBoxButton.OK, MessageBoxImage.Warning);
-                txtPrix.Focus();
+                txtEmail.Focus();
+                return false;
+            }
+
+            // Validation du format email
+            if (!IsValidEmail(txtEmail.Text.Trim()))
+            {
+                MessageBox.Show("Le format de l'email n'est pas valide.", "Validation", 
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                txtEmail.Focus();
                 return false;
             }
 
             return true;
         }
 
+        private bool IsValidEmail(string email)
+        {
+            try
+            {
+                var regex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+                return regex.IsMatch(email);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         private void ViderChamps()
         {
-            txtImei.Text = string.Empty;
-            txtMarque.Text = string.Empty;
-            txtModele.Text = string.Empty;
-            txtPrix.Text = string.Empty;
-            dgTelephones.SelectedItem = null;
+            txtMatricule.Text = string.Empty;
+            txtNom.Text = string.Empty;
+            txtPrenom.Text = string.Empty;
+            txtEmail.Text = string.Empty;
+            dgUsers.SelectedItem = null;
         }
 
         protected override void OnClosed(EventArgs e)
         {
-            _telephoneService?.Dispose();
+            _userService?.Dispose();
             base.OnClosed(e);
         }
     }
