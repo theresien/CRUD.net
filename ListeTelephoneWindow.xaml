@@ -1,0 +1,84 @@
+<Window x:Class="TelephoneCRUD.ListeTelephoneWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Liste Complète des Téléphones" Height="500" Width="800"
+        WindowStartupLocation="CenterScreen">
+    
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- En-tête -->
+        <TextBlock Grid.Row="0" Text="📱 Liste Complète des Téléphones" 
+                   FontSize="24" FontWeight="Bold" Foreground="#2C3E50" 
+                   HorizontalAlignment="Center" Margin="0,0,0,20"/>
+
+        <!-- Barre d'outils -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,15">
+            <Button x:Name="btnActualiser" Content="🔄 Actualiser" Width="100" Height="35" 
+                    Background="#3498DB" Foreground="White" BorderThickness="0" 
+                    Click="BtnActualiser_Click" Cursor="Hand" Margin="0,0,10,0"/>
+            <Button x:Name="btnExporter" Content="📊 Exporter" Width="100" Height="35" 
+                    Background="#27AE60" Foreground="White" BorderThickness="0" 
+                    Click="BtnExporter_Click" Cursor="Hand" Margin="0,0,10,0"/>
+            <TextBlock Text="Recherche:" VerticalAlignment="Center" Margin="20,0,5,0" FontWeight="Bold"/>
+            <TextBox x:Name="txtRecherche" Width="200" Height="30" 
+                     TextChanged="TxtRecherche_TextChanged" 
+                     ToolTip="Rechercher par marque ou modèle"/>
+        </StackPanel>
+
+        <!-- DataGrid avec plus de détails -->
+        <DataGrid Grid.Row="2" x:Name="dgTelephonesList" AutoGenerateColumns="False" 
+                  CanUserAddRows="False" CanUserDeleteRows="False" 
+                  SelectionMode="Single" GridLinesVisibility="Both"
+                  HeadersVisibility="Column" RowHeight="40"
+                  AlternatingRowBackground="#F8F9FA">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="IMEI" Binding="{Binding Imei}" Width="150" FontFamily="Consolas"/>
+                <DataGridTextColumn Header="Marque" Binding="{Binding Marque}" Width="120"/>
+                <DataGridTextColumn Header="Modèle" Binding="{Binding Modele}" Width="150"/>
+                <DataGridTextColumn Header="Prix (€)" Binding="{Binding Prix, StringFormat='{}{0:F2}'}" Width="100">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="HorizontalAlignment" Value="Right"/>
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="Foreground" Value="#27AE60"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Date d'ajout" Binding="{Binding DateAjout, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" Width="140"/>
+            </DataGrid.Columns>
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                    <Setter Property="Cursor" Value="Hand"/>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#E8F4FD"/>
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="#3498DB"/>
+                            <Setter Property="Foreground" Value="White"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.RowStyle>
+        </DataGrid>
+
+        <!-- Informations statistiques -->
+        <Border Grid.Row="3" BorderBrush="#BDC3C7" BorderThickness="1" 
+                CornerRadius="5" Padding="15" Margin="0,15,0,0" Background="#F8F9FA">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock x:Name="txtNombreTotal" Text="Total: 0 téléphones" 
+                           FontWeight="Bold" Margin="0,0,20,0" Foreground="#2C3E50"/>
+                <TextBlock x:Name="txtPrixMoyen" Text="Prix moyen: 0,00 €" 
+                           FontWeight="Bold" Margin="0,0,20,0" Foreground="#27AE60"/>
+                <TextBlock x:Name="txtPrixTotal" Text="Valeur totale: 0,00 €" 
+                           FontWeight="Bold" Foreground="#E74C3C"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
